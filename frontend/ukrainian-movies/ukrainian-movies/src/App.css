@@ -1,0 +1,249 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root{
+  --BACK-COLOR: rgb(6, 6, 6);
+  --TEXT-COLOR: white;
+  --LOGO-COLOR: rgb(200, 177, 27);
+  --LOGO-HOVER-COLOR: rgb(176, 156, 26);
+  --FILTRATION-BLOCK-BACK: rgb(33, 33, 33);
+  --FILTRATION-HOVER: rgb(184, 184, 184);
+  --ACTIVE-PAGINATION-BTN-BACK: rgb(157, 132, 39);
+}
+
+body{
+  background-color: var(--BACK-COLOR);
+  color: var(--TEXT-COLOR);
+  letter-spacing: 1px;
+}
+
+.logo-block {
+  padding: 2%;
+  border-bottom: 1px solid var(--TEXT-COLOR);
+  margin-bottom: 2%;
+}
+
+.logo-block h1 {
+  color: var(--LOGO-COLOR);
+  text-transform: uppercase;
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: all .5s ease-in-out;
+}
+
+.logo-block h1:hover {
+  color: var(--LOGO-HOVER-COLOR);
+}
+
+.filtration-block {
+  padding: 1% 2%;
+  background-color: var(--FILTRATION-BLOCK-BACK);
+  width: 96%;
+  border-radius: 10px;
+  margin: 0 auto;
+}
+
+.search-block{
+  background-color: var(--FILTRATION-BLOCK-BACK);
+  border-bottom: 1px solid var(--TEXT-COLOR); 
+}
+
+.search-block input {
+  background-color: transparent;
+  width: 100%;
+  padding: 1.5% 0;
+  border: none;
+  color: var(--TEXT-COLOR);
+  font-size: .9em;
+}
+
+.search-block input:focus{
+  outline: none;
+}
+
+.filter-icon {
+  display: flex;
+  flex-direction: row;
+}
+
+.filter-icon svg {
+  width: 1.5%;
+  margin-right: 1%;
+}
+
+.filtration {
+  margin-top: 2%;
+  cursor: pointer;
+  transition: all .5s ease-in-out;
+}
+
+.filtration:hover{
+  color: var(--FILTRATION-HOVER);
+}
+
+.body-block {
+  padding: 2%;
+}
+
+.body-block h1 {
+  text-transform: uppercase;
+  margin-bottom: 2%;
+}
+
+.movies{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+}
+
+.movie{
+  width: 100%;
+  max-width: 30vw;
+  margin-bottom: 5%;
+}
+
+.img-block {
+  width: 30vw;
+  height: 80vh;
+}
+
+.movie img{
+  border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.movie-info {
+  margin-top: 2%;
+  margin-left: 7%;
+}
+
+.movie-name {
+  text-transform: uppercase;
+  margin-top: 3%;
+  margin-bottom: 3%;
+}
+
+.inline-block{
+  margin-top: 2%;
+  display: flex;
+}
+
+.inline-block p:first-child{
+  margin-right: 3%;
+}
+
+.inline-block p:first-child:after{
+  content: "·";
+  margin-left: 20%;
+  font-weight: bold;
+}
+
+.movie {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.movie:hover {
+  transform: scale(1.03);
+}
+
+.pagination{
+  margin-top: 3%;
+  margin-bottom: 5%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: .5%;
+}
+
+.pagination button {
+  padding: 1%;
+  border: none;
+  cursor: pointer;
+  background-color: var(--LOGO-COLOR);
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all .5s ease-in-out;
+}
+
+.pagination button:hover {
+  background-color: var(--LOGO-HOVER-COLOR);
+  transform: scale(1.03);
+}
+
+#active-btn {
+  background-color: var(--ACTIVE-PAGINATION-BTN-BACK);
+}
+
+.suggestions-list {
+    position: absolute;
+    top: 27%;
+    left: 2%;
+    width: 96%;
+    box-sizing: border-box;
+
+    background-color: #fff;
+    color: #222;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 13px 16px;
+    cursor: pointer;
+
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item + .suggestion-item {
+    border-top: 1px solid #f0f0f0;
+}
+
+.suggestion-item:hover {
+    background-color: #f5f5f5;
+}
+
+.suggestion-item span:first-child {
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.suggestion-item span:last-child {
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.suggestions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+}
+
+.suggestions-list::-webkit-scrollbar-track {
+    background-color: transparent;
+}

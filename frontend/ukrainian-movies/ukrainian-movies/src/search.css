@@ -1,0 +1,142 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.filtration-b{
+    letter-spacing: 1px;
+}
+
+:root{
+    --MAIN-COLOR: rgb(240, 221, 41);
+    --BTN-HOVER-BACK: rgb(240, 221, 41);
+}
+
+.search-title h2 {
+    padding: 3%;
+}
+
+.filtration-b{
+    display: grid;
+    /* grid-template-columns: 1fr 1fr; */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    background-color: #222;
+    width: 96%;
+    position: absolute;
+    left: 2%;
+    border-radius: 20px;
+    padding: 2%;
+    z-index: 100;
+    margin-top: .2%;
+    /* gap: 2%; */
+    column-gap: 5%;
+}
+
+.f-year, .range-bar-text, .genre-block, .company-block, 
+.distributor-b, .submit-btn-block{
+    padding: 2%;
+}   
+
+.range-bar{
+    display: flex;
+    flex-direction: column;
+}
+
+.range-bar label {
+    margin-bottom: 1%;
+}
+
+.range-bar input {
+    accent-color: var(--MAIN-COLOR);
+}
+
+.range-bar-text {
+    display: flex;
+    flex-direction: row;
+    gap: 2%;
+}
+
+.range-bar-text input {
+    width: 50%;
+    margin-left: 5%;
+    border-radius: 2px;
+    border: none;
+    padding: 1%;
+}
+
+.genre-block, .company-block, .distributor-block, .dop-block, .director-block,
+.writer-block, .editor-block, .composer-block, .actor-block, .status-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.genre-block label, .company-block label, .distributor-block label, .dop-block label, .director-block label,
+.writer-block label, .editor-block label, .composer-block label, .actor-block label {
+    margin-bottom: 1%;
+}
+
+.genre-block select, .company-block select, .distributor-block select {
+    padding: 1%;
+    border: none;
+    border-radius: 5px;
+}
+
+.genre-block select:focus, .company-block select:focus, .distributor-block select:focus{
+    outline: none;
+}
+
+.genre-block select option:checked {
+    background-color: var(--MAIN-COLOR);
+}
+
+.dop-block, .director-block, .writer-block, .editor-block, .composer-block, .actor-block, .status-block {
+    width: 100%;
+    /* margin-left: 2%; */
+    padding: 1.4%;
+}
+
+.dop-block input, .director-block input, .writer-block input, .editor-block input, 
+.composer-block input, .actor-block input, .status-block input {
+    padding: 1%;
+    border-radius: 5px;
+    border: none;
+}
+
+.dop-block input:focus, .director-block input:focus, .writer-block input:focus, .editor-block input:focus, 
+.composer-block input:focus, .actor-block input:focus, .status-block input:focus{
+    outline: none;
+}
+
+.status-b p{
+    margin-bottom: 1%;
+}
+
+.status-check{
+    display: flex;
+    flex-direction: column;
+}
+
+.check-s {
+    margin-bottom: 1%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    column-gap: 2%;;
+}
+
+#sbt-f{
+    width: 50%;
+    padding: 1%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    /* font-weight: bold; */
+    background-color: var(--MAIN-COLOR);
+    transition: all .5s ease-in-out;
+}
+
+#sbt-f:hover {
+    background-color: var(--BTN-HOVER-BACK);
+}
