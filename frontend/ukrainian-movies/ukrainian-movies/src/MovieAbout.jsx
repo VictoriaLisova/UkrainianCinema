@@ -74,6 +74,9 @@ export default function MovieAbout(){
     }, [genresAmount])
 
     function displayNames(data, isCountry) {
+        if(Array.isArray(data)){
+            return data.join(", ");
+        }
        return data !== null && data !== "" ? data : isCountry ? "Україна" : "Не відомий";
     }
 
@@ -126,40 +129,40 @@ export default function MovieAbout(){
                     </div>
                     <div className="country">
                         <p className="l-type">Країна походження</p>
-                        <p>{displayNames(movie.country, true)}</p>
+                        <p>{displayNames(movie.countries, true)}</p>
                     </div>
                     <div className="language">
                         <p className="l-type">Мова озвучки</p>
-                        <p>{displayNames(movie.language, false)}</p>
+                        <p>{displayNames(movie.languages, false)}</p>
                     </div>
                     <div className="director">
                         <p className="l-type">Режисер</p>
-                        <PeaopleList people={movie.director} isCountry={false}/>
+                        <PeaopleList people={movie.directors} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.director) ? "ref-itm" : ""}>{displayNames(movie.director, false)}</p> */}
                     </div>
                     <div className="writer">
                         <p className="l-type">Сценарист</p>
-                        <PeaopleList people={movie.screenWriter} isCountry={false}/>
+                        <PeaopleList people={movie.screenWriters} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.screenWriter) ? "ref-itm" : ""}>{displayNames(movie.screenWriter, false)}</p> */}
                     </div>
                     <div className="dop">
                         <p className="l-type">Оператор-постановник</p>
-                        <PeaopleList people={movie.photographyDirector} isCountry={false}/>
+                        <PeaopleList people={movie.photographyDirectors} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.photographyDirector) ? "ref-itm" : ""}>{displayNames(movie.photographyDirector, false)}</p> */}
                     </div>
                     <div className="editor">
                         <p className="l-type">Монтажер</p>
-                        <PeaopleList people={movie.editor} isCountry={false}/>
+                        <PeaopleList people={movie.editors} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.editor) ? "ref-itm" : ""}>{displayNames(movie.editor)}</p> */}
                     </div>
                     <div className="composite">
                         <p className="l-type">Композитор</p>
-                        <PeaopleList people={movie.composer} isCountry={false}/>
+                        <PeaopleList people={movie.composers} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.composer) ? "ref-itm" : ""}>{displayNames(movie.composer)}</p> */}
                     </div>
                     <div className="company">
                         <p className="l-type">Виробнича компанія</p>
-                        <PeaopleList people={movie.company} isCountry={false}/>
+                        <PeaopleList people={movie.companies} isCountry={false}/>
                         {/* <p className={checkAvalibility(movie.company) ? "ref-itm" : ""}>{displayNames(movie.company)}</p> */}
                     </div>
                     <div className="distributor">

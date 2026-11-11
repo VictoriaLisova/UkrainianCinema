@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { getSuggestions } from "./requests";
 import Filtration from "./Filtration";
 
-export default function Header(){
+export default function Header({ isShow, setIsShow }){
     const navigate = useNavigate();
     const [text, setText] = useState("");
     const [suggestions, setSuggestions] = useState([]);
-    const [isShow, setIsShow] = useState(false);
+    // const [isShow, setIsShow] = useState(false);
 
     useEffect(() => {
         const query = text.trim();
@@ -52,7 +52,7 @@ export default function Header(){
                     </div>
                 </div>
             </div>
-            {isShow && (<Filtration/>)}
+            {/* {isShow && (<Filtration/>)} */}
       </section>
     )
 }
