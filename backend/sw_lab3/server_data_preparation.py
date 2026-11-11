@@ -1,10 +1,11 @@
-import re
 from urllib.parse import unquote
+from rdflib import Graph, URIRef, Literal, RDFS, Namespace
 
-from rdflib import Graph, URIRef, Literal
+EX = Namespace("http://ukrainian-movies.org/")
 
 graph = Graph()
 graph.parse("movies_graph.ttl", format='turtle')
+_movies_cache = None
 
 PEOPLE_FIELDS = [
     ("director", "directorNode", "director"),
@@ -68,185 +69,89 @@ def get_all_movies():
 
     return data
 
-# def get_movie_info(movie_id):
-#     request = """
-#         PREFIX ex: <http://ukrainian-movies.org/>
-#         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-#
-#         SELECT ?title ?releaseDate ?year ?country ?genre ?language ?director ?screenWriter ?photographyDirector
-#                ?editor ?composer ?company ?distributor ?durationMin ?posterFile ?cast
-#
-#         WHERE {
-#             ?movie a ex:Movie ;
-#                    rdfs:label ?title .
-#
-#             OPTIONAL { ?movie ex:ReleaseDate ?releaseDate . }
-#             OPTIONAL { ?movie ex:Year ?year . }
-#             OPTIONAL { ?movie ex:Country ?countryNode . ?countryNode rdfs:label ?country . }
-#             OPTIONAL { ?movie ex:Genre ?genreNode . ?genreNode rdfs:label ?genre . }
-#             OPTIONAL { ?movie ex:Language ?languageNode . ?languageNode rdfs:label ?language . }
-#             OPTIONAL { ?movie ex:Director ?directorNode . ?directorNode rdfs:label ?director . }
-#             OPTIONAL { ?movie ex:ScreenWriter ?screenWriter . }
-#             OPTIONAL { ?movie ex:PhotographyDirector ?photographyDirector . }
-#             OPTIONAL { ?movie ex:Editor ?editor . }
-#             OPTIONAL { ?movie ex:Composer ?composer . }
-#             OPTIONAL { ?movie ex:Company ?companyNode . ?companyNode rdfs:label ?company . }
-#             OPTIONAL { ?movie ex:Distributor ?distributor . }
-#             OPTIONAL { ?movie ex:Duration ?durationMin . }
-#             OPTIONAL { ?movie ex:Poster ?posterFile . }
-#             OPTIONAL { ?movie ex:Cast ?castNode . ?castNode rdfs:label ?cast . }
-#         }
-#     """
-#     movie_uri = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
-#
-#     result = graph.query(
-#         request,
-#         initBindings={"movie": movie_uri}
-#     )
-#     # result = graph.query(request, initBindings={"movie_id": URIRef(movie_id)})
-#     movie = None
-#
-#     for row in result:
-#         if movie is None:
-#             movie = {
-#                 "id": movie_id,
-#                 "title": str(row.title),
-#                 "releaseDate": str(row.releaseDate)[:4],
-#                 "country": str(row.country),
-#                 "genres": [],
-#                 "language": str(row.language),
-#                 "director": str(row.director),
-#                 "screenWriter": str(row.screenWriter),
-#                 "photographyDirector": str(row.photographyDirector),
-#                 "editor": str(row.editor),
-#                 "composer": str(row.composer),
-#                 "company": str(row.company),
-#                 "distributor": str(row.distributor),
-#                 "cast": [],
-#                 "durationMin": str(row.durationMin),
-#                 "posterFile": str(row.posterFile),
-#                 "description": str(row.description)
-#             }
-#         for key, value in [
-#             ("genres", row.genres),
-#             ("cast", row.cast)
-#         ]:
-#             if value:
-#                 label = str(value).rsplit('/', 1)[-1].replace("_", " ")
-#                 if label not in movie[key]:
-#                     movie[key].append(label)
-#
-#     return movie
+def one(subject, predicate):
+    value = graph.value(subject, predicate)
+    return str(value) if value is not None else None
 
-def val(x):
-    return str(x) if x is not None else None
 
-def label_of(x):
-    return str(x).rsplit('/', 1)[-1].replace("_", " ")
+def labeled(subject, predicate):
+    items = []
+    for node in graph.objects(subject, predicate):
+        name = graph.value(node, RDFS.label)
+        if name is None:
+            continue
+        item = {
+            "id": unquote(str(node).rsplit("/", 1)[-1]),
+            "name": str(name),
+        }
+        if item not in items:
+            items.append(item)
+    return items
+
 
 def get_movie_cast(movie_id):
-    query = """
-        PREFIX ex: <http://ukrainian-movies.org/>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-        SELECT ?person ?name ?photo ?character ?order
-        WHERE {
-            ?movie ex:CastEntry ?entry .
-            ?entry ex:Person ?person .
-            ?person rdfs:label ?name .
-            OPTIONAL { ?entry ex:CastOrder ?order . }
-            OPTIONAL { ?entry ex:Character ?character . }
-            OPTIONAL { ?person ex:Photo ?photo . }
-        }
-        ORDER BY ?order
-    """
     movie_uri = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
-    result = graph.query(query, initBindings={"movie": movie_uri})
-
     cast = {}
-    for r in result:
-        pid = str(r.person).rsplit("/", 1)[-1]
+
+    for entry in graph.objects(movie_uri, EX.CastEntry):
+        person = graph.value(entry, EX.Person)
+        if person is None:
+            continue
+
+        name = graph.value(person, RDFS.label)
+        if name is None:
+            continue
+
+        pid = str(person).rsplit("/", 1)[-1]
+        order = graph.value(entry, EX.CastOrder)
+        character = graph.value(entry, EX.Character)
+
         if pid not in cast:
             cast[pid] = {
                 "id": pid,
-                "name": str(r.name),
-                "photo": str(r.photo) if r.photo else None,
+                "name": str(name),
+                "photo": one(person, EX.Photo),
+                "order": int(order) if order is not None else 999,
                 "characters": [],
             }
-        if r.character and str(r.character) not in cast[pid]["characters"]:
-            cast[pid]["characters"].append(str(r.character))
+        if character is not None and str(character) not in cast[pid]["characters"]:
+            cast[pid]["characters"].append(str(character))
 
-    return list(cast.values())
+    return sorted(cast.values(), key=lambda c: c["order"])
 
-def ref(node, name):
-    return {"id": str(node).rsplit("/", 1)[-1], "name": str(name)}
 
 def get_movie_info(movie_id):
-    request = """
-        PREFIX ex: <http://ukrainian-movies.org/>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    m = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
+    if (m, RDFS.label, None) not in graph:
+        return None
 
-        SELECT ?title ?releaseDate ?year ?country ?genre ?language ?directorNode ?director
-               ?screenWriterNode ?screenWriter ?photographyDirectorNode ?photographyDirector
-               ?editorNode ?editor ?composerNode ?composer ?companyNode ?company
-               ?distributorNode ?distributor ?durationMin ?posterFile ?description
-        WHERE {
-            ?movie a ex:Movie ;
-                   rdfs:label ?title .
+    release = one(m, EX.ReleaseDate)
 
-            OPTIONAL { ?movie ex:ReleaseDate ?releaseDate . }
-            OPTIONAL { ?movie ex:Year ?year . }
-            OPTIONAL { ?movie ex:Country ?countryNode . ?countryNode rdfs:label ?country . }
-            OPTIONAL { ?movie ex:Genre ?genreNode . ?genreNode rdfs:label ?genre . }
-            OPTIONAL { ?movie ex:Language ?languageNode . ?languageNode rdfs:label ?language . }
-            OPTIONAL { ?movie ex:Director ?directorNode . ?directorNode rdfs:label ?director . }
-            OPTIONAL { ?movie ex:ScreenWriter ?screenWriterNode . ?screenWriterNode rdfs:label ?screenWriter . }
-            OPTIONAL { ?movie ex:PhotographyDirector ?photographyDirector . }
-            OPTIONAL { ?movie ex:Editor ?editor . }
-            OPTIONAL { ?movie ex:Composer ?composer . }
-            OPTIONAL { ?movie ex:Company ?companyNode . ?companyNode rdfs:label ?company . }
-            OPTIONAL { ?movie ex:Distributor ?distributor . }
-            OPTIONAL { ?movie ex:Duration ?durationMin . }
-            OPTIONAL { ?movie ex:Poster ?posterFile . }
-            OPTIONAL { ?movie ex:Description ?description . }
-        }
-    """
-    movie_uri = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
-    result = graph.query(request, initBindings={"movie": movie_uri})
+    return {
+        "id": movie_id,
+        "title": one(m, RDFS.label),
+        "originalTitle": one(m, EX.OriginalTitle),
+        "releaseDate": release,
+        "year": one(m, EX.Year),
+        "durationMin": one(m, EX.Duration),
+        "posterFile": one(m, EX.Poster),
+        "backdropFile": one(m, EX.Backdrop),
+        "description": one(m, EX.Description),
+        "rating": one(m, EX.Rating),
 
-    movie = None
-    for row in result:
-        if movie is None:
-            movie = {
-                "id": movie_id,
-                "title": val(row.title),
-                "releaseDate": val(row.releaseDate)[:4] if row.releaseDate else None,
-                "country": val(row.country),
-                "language": val(row.language),
-                "company": (
-                    {"id": unquote(str(row.companyNode).rsplit("/", 1)[-1]),
-                     "name": str(row.company)}
-                    if row.company else None
-                ),
-                "durationMin": val(row.durationMin),
-                "posterFile": val(row.posterFile),
-                "description": val(row.description),
-                "genres": [],
-                "cast": [],
-                **{key: [] for key, _, _ in PEOPLE_FIELDS},
-            }
-        if row.genre and str(row.genre) not in movie["genres"]:
-            movie["genres"].append(str(row.genre))
-        for key, node_var, name_var in PEOPLE_FIELDS:
-            node, name = row.get(node_var), row.get(name_var)
-            if node is not None and name is not None:
-                person = ref(node, name)
-                if person not in movie[key]:
-                    movie[key].append(person)
+        "genres": [x["name"] for x in labeled(m, EX.Genre)],
+        "countries": [x["name"] for x in labeled(m, EX.Country)],
+        "languages": [x["name"] for x in labeled(m, EX.Language)],
+        "companies": labeled(m, EX.Company),
 
-    if movie is not None:
-        movie["cast"] = get_movie_cast(movie_id)
-    return movie
+        "directors": labeled(m, EX.director),
+        "screenWriters": labeled(m, EX.screenWriter),
+        "photographyDirectors": labeled(m, EX.cinematographer),
+        "editors": labeled(m, EX.editor),
+        "composers": labeled(m, EX.composer),
+
+        "cast": get_movie_cast(movie_id),
+    }
 
 def search_by_member(person_id):
     request = """
@@ -347,5 +252,30 @@ def get_suggestions(query_text):
 
     return suggestions[:5]
 
-def filter_data(filter_queue):
-    pass
+def all_movies_cached():
+    global _movies_cache
+    if _movies_cache is None:
+        _movies_cache = get_all_movies()
+    return _movies_cache
+
+def filter_data(genre=None, order=None, from_year=None, to_year=None):
+    movies = list(all_movies_cached())
+
+    if genre:
+        movies = [m for m in movies if genre in m["genres"]]
+
+    if from_year or to_year:
+        lo = int(from_year) if from_year else 0
+        hi = int(to_year) if to_year else 9999
+        movies = [m for m in movies if m["date"] and lo <= int(m["date"]) <= hi]
+
+    if order in ("asc", "desc"):
+        with_year = [m for m in movies if m["date"]]
+        without_year = [m for m in movies if not m["date"]]
+        with_year.sort(key=lambda m: int(m["date"]), reverse=(order == "desc"))
+        movies = with_year + without_year
+
+    return movies
+
+def get_genres():
+    return sorted({g for m in all_movies_cached() for g in m["genres"]})

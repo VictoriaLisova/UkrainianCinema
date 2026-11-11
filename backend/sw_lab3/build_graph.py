@@ -142,16 +142,26 @@ def create_graph():
         add_named_entities(movie_uri, EX.Language, EX.Language, movie.get("languages", []))
         add_named_entities(movie_uri, EX.Company, EX.Company, movie.get("companies", []))
 
-        # for person in movie.get("directors", []):
-        #     add_person(movie_uri, EX.Director, person)
+        for person in movie.get("directors", []):
+            add_person(movie_uri, EX.director, person)
+
         for person in movie.get("cast", []):
             add_cast_entry(movie_uri, film_id, person)
 
         for person in movie.get("screenWriters", []):
-            add_person(movie_uri, EX.ScreenWriter, person)
+            add_person(movie_uri, EX.screenWriter, person)
 
         for person in movie.get("cast", []):
             add_person(movie_uri, EX.Cast, person)
+
+        for person in movie.get("photographyDirectors", []):
+            add_person(movie_uri, EX.cinematographer, person)
+
+        for person in movie.get("editors", []):
+            add_person(movie_uri, EX.editor, person)
+
+        for person in movie.get("composers", []):
+            add_person(movie_uri, EX.composer, person)
 
     output_file = "movies_graph.ttl"
     g.serialize(destination=output_file, format="turtle")

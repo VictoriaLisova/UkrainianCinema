@@ -10,7 +10,7 @@
 
 :root{
     --MAIN-COLOR: rgb(240, 221, 41);
-    --BTN-HOVER-BACK: rgb(240, 221, 41);
+    --BTN-HOVER-BACK: rgb(212, 195, 39);
 }
 
 .search-title h2 {
@@ -25,6 +25,7 @@
     width: 96%;
     position: absolute;
     left: 2%;
+    top: 35%;
     border-radius: 20px;
     padding: 2%;
     z-index: 100;
@@ -33,10 +34,10 @@
     column-gap: 5%;
 }
 
-.f-year, .range-bar-text, .genre-block, .company-block, 
+.f-year, .range-bar-text, .genre-block, .company-block,
 .distributor-b, .submit-btn-block{
     padding: 2%;
-}   
+}
 
 .range-bar{
     display: flex;
@@ -96,14 +97,14 @@
     padding: 1.4%;
 }
 
-.dop-block input, .director-block input, .writer-block input, .editor-block input, 
+.dop-block input, .director-block input, .writer-block input, .editor-block input,
 .composer-block input, .actor-block input, .status-block input {
     padding: 1%;
     border-radius: 5px;
     border: none;
 }
 
-.dop-block input:focus, .director-block input:focus, .writer-block input:focus, .editor-block input:focus, 
+.dop-block input:focus, .director-block input:focus, .writer-block input:focus, .editor-block input:focus,
 .composer-block input:focus, .actor-block input:focus, .status-block input:focus{
     outline: none;
 }
@@ -126,8 +127,8 @@
     column-gap: 2%;;
 }
 
-#sbt-f{
-    width: 50%;
+#sbt-f, #rst-f{
+    width: 30%;
     padding: 1%;
     border: none;
     border-radius: 5px;
@@ -137,6 +138,46 @@
     transition: all .5s ease-in-out;
 }
 
-#sbt-f:hover {
+ #rst-f{
+    margin-left: 2%;
+ }
+
+#sbt-f:hover, #rst-f:hover {
     background-color: var(--BTN-HOVER-BACK);
+}
+
+.range-bar-text{
+    margin-left: -2%;
+}
+
+.range-bar-text input {
+    width: 100%;
+    margin-left: -1%;
+    padding: 3%;
+}
+
+.range-bar-text input:focus{
+    outline: none;
+}
+
+.order-block{
+    margin-left: 2%;
+}
+
+.order-block label{
+    margin-right: 2%;
+}
+
+#f-order {
+    width: 30%;
+    padding: 1.2%;
+    border-radius: 5px;
+}
+
+#f-order:focus{
+    outline: none;
+}
+
+#f-order option:checked{
+    background-color: var(--MAIN-COLOR);
 }
