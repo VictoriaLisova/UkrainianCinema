@@ -1,5 +1,6 @@
 import Movie from "./Movie";
 
+/** Формує список карток фільмів */
 export default function Movies({dataToShow}){
     return (
         <div className='movies'>

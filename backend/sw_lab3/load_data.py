@@ -1,3 +1,4 @@
+"""Отримання відомостей про українські фільми з Wikidata та їх доповнення даними TMDb"""
 import json
 import os
 import time
@@ -47,6 +48,9 @@ GROUP BY ?film ?filmLabel
 """
 
 def get_wikidata_films():
+    """Отримує унікальні записи про фільми з Wikidata за допомогою SPARQL.
+    Повторює запит у разі помилки та повертає список фільмів
+    """
     sparql = SPARQLWrapper(WIKIDATA_ENDPOINT)
     sparql.setQuery(WIKIDATA_QUERY)
     sparql.setReturnFormat(JSON)
@@ -80,12 +84,14 @@ def get_wikidata_films():
     return []
 
 def normalize_title(title):
+    """Нормалізує назву фільму: прибирає розділові знаки, зайві пробіли та змінює регістр"""
     title = title.lower().strip()
     title = re.sub(r"[^\w\s]", " ", title)
     return " ".join(title.split())
 
 
 def title_similarity(title1, title2):
+    """Обчислює подібність нормалізованих назв фільмів за шкалою від 0 до 1"""
     return SequenceMatcher(
         None,
         normalize_title(title1),
@@ -93,20 +99,24 @@ def title_similarity(title1, title2):
     ).ratio()
 
 def image_url(path, size="w500"):
+    """Формує URL зображення TMDb заданого розміру або повертає порожній рядок"""
     if not path:
         return ""
     return f"{TMDB_IMAGE_URL}/{size}{path}"
 
 def is_wikidata_id(title):
+    """Перевіряє, чи є переданий рядок ідентифікатором Wikidata формату Q та цифри"""
     return bool(re.fullmatch(r"Q\d+", title or ""))
 
 def years_close(year1, year2, tolerance=1):
+    """Перевіряє, чи різниця між роками не перевищує допустиму межу"""
     try:
         return abs(int(year1) - int(year2)) <= tolerance
     except (TypeError, ValueError):
         return True
 
 def parse_duration(value):
+    """Перетворює тривалість на цілу кількість хвилин."""
     try:
         number = float(value)
     except (TypeError, ValueError):
@@ -119,6 +129,9 @@ def parse_duration(value):
 
 
 def tmdb_request(endpoint, params=None, retries=3):
+    """Виконує авторизований GET-запит до API TMDb
+    При статусі 429 повторює запит, якщо залишилися спроби.
+    """
     for attempt in range(1, retries + 1):
         response = requests.get(
             f"{TMDB_API_URL}/{endpoint}",
@@ -138,6 +151,14 @@ def tmdb_request(endpoint, params=None, retries=3):
     return {}
 
 def find_tmdb_movie(title, year=""):
+    """Шукає найкращий збіг фільму в TMDb за назвою та роком випуску.
+    Порівнює нормалізовані назви й відкидає збіги з оцінкою нижче 0.35.
+    Args:
+        title: Назва фільму.
+        year: Необов’язковий рік випуску.
+    Returns:
+        Запис найкращого кандидата або None, якщо збіг не знайдено.
+    """
     if not title:
         return None
 
@@ -190,6 +211,15 @@ def find_tmdb_movie(title, year=""):
         return None
 
 def people_by_jobs(crew, jobs=(), department=None, keywords=()):
+    """Відбирає унікальних учасників знімальної групи
+    Args:
+        crew: Список учасників знімальної групи з TMDb
+        jobs: Точні назви професій
+        department: Необов’язкова назва відділу
+        keywords: Ключові слова у назві професії для заданого відділу
+    Returns:
+        Список словників з ідентифікатором, ім’ям, фото та професією.
+    """
     people = []
     seen = set()
 
@@ -221,6 +251,16 @@ def people_by_jobs(crew, jobs=(), department=None, keywords=()):
 
 
 def get_tmdb_data(title, year):
+    """Отримує дутальну інформацію про фільм і знімальну групу з TMDb
+    Args:
+        title: Назва фільму
+        year: Рік випуску
+    Returns:
+        Словник даних або порожній словник якщо збіг відсутній
+        чи помилки HTTP-запиту деталей
+    Raises:
+        RuntimeError: Якщо токен TMDb не налаштовано.
+    """
     if not TMDB_TOKEN:
         raise RuntimeError("Не знайдено TMDB_TOKEN у файлі .env")
 
@@ -313,6 +353,7 @@ def get_tmdb_data(title, year):
         return {}
 
 def empty_record(film, title, year):
+    """Створює початковий запис фільму з даними Wikidata та порожніми полями для доповнення"""
     return {
         "film": film["film"],
         "filmLabel": title,
@@ -344,6 +385,7 @@ def empty_record(film, title, year):
 
 
 def main():
+    """Збирає та доповнює дані про фільми, записуючи кожен JSON-об’єкт в окремий рядок файлу"""
     if not TMDB_TOKEN:
         raise RuntimeError("TMDB_TOKEN відсутній")
 
@@ -374,6 +416,12 @@ def main():
 
 
 def read_data(filename="movies.json"):
+    """Зчитує фільми з файлу, де кожен рядок містить окремий JSON-об’єкт
+    Args:
+        filename: Шлях до файлу з даними
+    Returns:
+        Список записів; порожні та некоректні рядки пропускаються
+    """
     movies = []
     with open(filename, "r", encoding="utf-8") as file:
         for line_number, line in enumerate(file, start=1):

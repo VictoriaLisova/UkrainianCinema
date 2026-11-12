@@ -1,3 +1,4 @@
+"""Отримання та обробка даних RDF-графа для каталогу, пошуку та фільтрації фільмів"""
 from urllib.parse import unquote
 from rdflib import Graph, URIRef, Literal, RDFS, Namespace
 
@@ -16,6 +17,12 @@ PEOPLE_FIELDS = [
 ]
 
 def get_all_movies():
+    """Отримує каталог фільмів із RDF-графа за допомогою SPARQL
+    Групує записи за ідентифікатором, об’єднує жанри без повторень та
+    розміщує першими фільми, які мають назву, постер, рік і жанр.
+    Returns:
+        Список словників із короткими відомостями про фільми
+    """
     request = """
         PREFIX ex: <http://ukrainian-movies.org/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -70,11 +77,19 @@ def get_all_movies():
     return data
 
 def one(subject, predicate):
+    """Отримує одне значення за заданим RDF-суб’єктом і предикатом"""
     value = graph.value(subject, predicate)
     return str(value) if value is not None else None
 
 
 def labeled(subject, predicate):
+    """Отримує пов’язані RDF-сутності з їхніми назвами без повторень
+    Args:
+        subject: RDF-суб’єкт
+        predicate: Предикат, за яким отримуються пов’язані вузли
+    Returns:
+        Список словників із полями id та name для вузлів із назвою
+    """
     items = []
     for node in graph.objects(subject, predicate):
         name = graph.value(node, RDFS.label)
@@ -90,6 +105,12 @@ def labeled(subject, predicate):
 
 
 def get_movie_cast(movie_id):
+    """Отримує акторський склад фільму, групуючи ролі одного актора
+    Args:
+        movie_id: Ідентифікатор фільму Wikidata
+    Returns:
+        Список акторів, відсортований за порядком у титрах.
+    """
     movie_uri = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
     cast = {}
 
@@ -121,6 +142,12 @@ def get_movie_cast(movie_id):
 
 
 def get_movie_info(movie_id):
+    """Формує детальну інформацію про фільм із RDF-графа
+    Args:
+        movie_id: Ідентифікатор фільму Wikidata
+    Returns:
+        Словник характеристик фільму або None, якщо фільм відсутній у графі
+    """
     m = URIRef(f"http://ukrainian-movies.org/movie/{movie_id}")
     if (m, RDFS.label, None) not in graph:
         return None
@@ -154,6 +181,13 @@ def get_movie_info(movie_id):
     }
 
 def search_by_member(person_id):
+    """Шукає фільми, пов’язані з актором або учасником знімальної групи
+    Args:
+        person_id: Ідентифікатор людини TMDb
+    Returns:
+        Словник із полями person та movies. Якщо збігів немає,
+        person дорівнює None, а movies - порожній список.
+    """
     request = """
         PREFIX ex: <http://ukrainian-movies.org/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -167,11 +201,11 @@ def search_by_member(person_id):
                 ?cast ex:Person ?person .
                 OPTIONAL { ?cast ex:Character ?member . }
             }
-            UNION { ?movie ex:Director ?person . }
-            UNION { ?movie ex:ScreenWriter ?person . }
-            UNION { ?movie ex:PhotographyDirector ?person . }
-            UNION { ?movie ex:Editor ?person . }
-            UNION { ?movie ex:Composer ?person . }
+            UNION { ?movie ex:director ?person . }
+            UNION { ?movie ex:screenWriter ?person . }
+            UNION { ?movie ex:cinematographer ?person . }
+            UNION { ?movie ex:editor ?person . }
+            UNION { ?movie ex:composer ?person . }
             ?person rdfs:label ?name .
             OPTIONAL { ?movie ex:Year ?year . }
             OPTIONAL { ?movie ex:Poster ?poster . }
@@ -201,6 +235,13 @@ def search_by_member(person_id):
     return { "person": person, "movies": list(movies.values()) }
 
 def get_suggestions(query_text):
+    """Формує до п’яти підказок для пошуку за назвою фільму.
+    Запити коротші за два символи ігноруються.
+    Args:
+        query_text: Текст пошукового запиту
+    Returns:
+        Список словників з ідентифікатором, назвою та роком фільму.
+    """
     query_text = query_text.strip()
 
     if len(query_text) < 2:
@@ -253,12 +294,23 @@ def get_suggestions(query_text):
     return suggestions[:5]
 
 def all_movies_cached():
+    """Завантажує каталог при першому виклику та повторно використовує збережений у кеші список"""
     global _movies_cache
     if _movies_cache is None:
         _movies_cache = get_all_movies()
     return _movies_cache
 
 def filter_data(genre=None, order=None, from_year=None, to_year=None):
+    """Фільтрує каталог і, якщо потрібно, сортує його за роком випуску.
+    Args:
+        genre: Назва жанру або None
+        order: asc для зростання, desc для спадання або None
+        from_year: Нижня межа року випуску включно або None
+        to_year: Верхня межа року випуску включно або None
+    Returns:
+        Список фільмів, які відповідають заданим параметрам. При сортуванні
+        записи без року розміщуються наприкінці.
+    """
     movies = list(all_movies_cached())
 
     if genre:
@@ -278,4 +330,5 @@ def filter_data(genre=None, order=None, from_year=None, to_year=None):
     return movies
 
 def get_genres():
+    """Повертає відсортований список унікальних жанрів із кешованого каталогу"""
     return sorted({g for m in all_movies_cached() for g in m["genres"]})

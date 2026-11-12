@@ -6,6 +6,7 @@ import Pagination from "./Pagination";
 import "./search.css";
 import Header from "./Header";
 
+/** Відображає фільмографію людини, ідентифікатор якої передано в URL */
 export default function Search(){
     const {person_id} = useParams();
     const [movies, setMovies] = useState([]);
@@ -18,6 +19,7 @@ export default function Search(){
 
 
     useEffect(() => {
+        /** Завантажує з сервера інформацію про людину та пов’язані з нею фільми */
         async function getSearchResults(){
             var response = await searchByPerson(person_id);
             if(response){

@@ -1,3 +1,4 @@
+/** Точка входу React-застосунку та налаштування маршрутів */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './App.css'

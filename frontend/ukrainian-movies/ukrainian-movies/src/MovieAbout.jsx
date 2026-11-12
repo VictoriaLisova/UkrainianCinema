@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import CastMember from "./CastMember";
 import PeaopleList from "./PeopleList";
 
+/** Відображає детальні відомості про фільм, акторський склад та знімальну групу */
 export default function MovieAbout(){
     const {id} = useParams();
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function MovieAbout(){
 
     const castRef = useRef(null);
 
+    /** Обчислює години та залишок хвилин для відображення тривалості */
     function getDuration(duration){
         const minInHour = 60;
         var hours = 0;
@@ -34,6 +36,7 @@ export default function MovieAbout(){
     }
 
     useEffect(() => {
+        /** Завантажує детальну інформацію про фільм та оновлює стан компонента */
         async function getMovie(){
             var responce = await getMovieInfo(id);
             if(responce){
@@ -49,8 +52,9 @@ export default function MovieAbout(){
 
     const colors = ["#4F63D8", "#A16207", "#BE185D", "#6D5A3C", "#0F766E", "#C2410C", 
         "#52627A", "#B91C1C", "#7E22CE", "#4D7C0F", "#0369A1", "#52525B"]
-    
+
     useEffect(() => {
+        /** Вибирає різні індекси кольорів для позначок жанрів */
         function genreColors(){
             const max = colors.length - 1;
             const min = 0;
@@ -73,6 +77,7 @@ export default function MovieAbout(){
         setIsReady(true);
     }, [genresAmount])
 
+    /** Форматує масив назв або підставляє текст для відсутніх даних */
     function displayNames(data, isCountry) {
         if(Array.isArray(data)){
             return data.join(", ");
@@ -80,11 +85,13 @@ export default function MovieAbout(){
        return data !== null && data !== "" ? data : isCountry ? "Україна" : "Не відомий";
     }
 
+    /** Перевіряє, чи значення не є порожнім рядком або null */
     function checkAvalibility(name) {
         return name !== "" && name !== null;
         // return Array.isArray(name) && name.length > 0;
     }
 
+    /** Прокручує горизонтальний список акторів у заданому напрямку */
     function scrollCast(direction){
         if(castRef.current){
             castRef.current.scrollBy({
@@ -94,11 +101,11 @@ export default function MovieAbout(){
         }
     }
 
+    /** Допоміжний обробник, призначений для переходу до фільмографії за наявності даних */
     function managePageLink(data, person_id){
         if (checkAvalibility(data)){
             useNavigate(`/{person_id}/movies`);
         }
-
     }
 
     if(isReady){

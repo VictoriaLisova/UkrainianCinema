@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getSuggestions } from "./requests";
 import Filtration from "./Filtration";
 
+/** Відображає шапку сайту, підказки пошуку за назвою та кнопку фільтрів */
 export default function Header({ isShow, setIsShow }){
     const navigate = useNavigate();
     const [text, setText] = useState("");

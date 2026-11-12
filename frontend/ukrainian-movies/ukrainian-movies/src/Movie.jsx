@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
 
+/** Відображає картку фільму з переходом до детальної інформації */
 export default function Movie({id, poster, title, year, genres}){
   const navigate = useNavigate();
 
