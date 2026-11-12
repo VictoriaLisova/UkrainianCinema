@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-
+/** Відображає картку актора з переходом до його фільмографії */
 export default function CastMember({person_id, name, role, img}){
     const navigate = useNavigate();
 

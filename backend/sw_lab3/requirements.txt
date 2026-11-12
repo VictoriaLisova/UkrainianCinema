@@ -1,0 +1,8 @@
+Flask
+Flask-Cors
+rdflib>=7.0,<8
+requests
+python-dotenv
+SPARQLWrapper
+pytest
+pytest-cov

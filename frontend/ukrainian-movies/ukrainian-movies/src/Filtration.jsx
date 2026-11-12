@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getFilterData, getGenres } from "./requests";
 import "./search.css";
 
+/** Відображає елементи фільтрації за жанром, роком і порядком сортування */
 export default function Filtration({ onResult }) {
     const [genres, setGenres] = useState([]);
     const [genre, setGenre] = useState("");
@@ -13,6 +14,10 @@ export default function Filtration({ onResult }) {
         getGenres().then(setGenres);
     }, []);
 
+/**
+ * Надсилає вибрані параметри фільтрації на сервер та передає результат батьківському компоненту
+ * @param {Object} filters - Параметри фільтрації
+*/
     async function apply(filters){
         try{
             const movies = await getFilterData(filters);
@@ -22,11 +27,12 @@ export default function Filtration({ onResult }) {
         }
     }
 
+    /** Застосовує вибрані параметри фільтрації */
     async function handleBtnClick() {
         await apply({genre, order, fromYear, toYear});
     }
 
-
+/** Скидає фільтри та завантажує каталог без обмежень */
     async function handleReset() {
         setGenre("");
         setOrder("");

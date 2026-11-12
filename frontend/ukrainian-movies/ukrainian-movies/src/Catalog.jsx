@@ -7,6 +7,7 @@ import Pagination from './Pagination';
 import Header from './Header';
 import Filtration from './Filtration';
 
+/** Відображає каталог фільмів із фільтрами*/
 export default function Catalog() {
   const [movies, setMovies] = useState([]);
   const valuesToShow = 20;
@@ -15,6 +16,7 @@ export default function Catalog() {
   const [isShow, setIsShow] = useState(false);
 
   useEffect(() => {
+    /** Завантажує каталог із сервера та оновлює список фільмів */
     async function getMovies(){
       var data = await getAllMovies();
       if(data){
@@ -26,11 +28,16 @@ export default function Catalog() {
 
   }, [])
 
+  /**
+   * Оновлює список після фільтрації та повертає користувача на першу сторінку.
+   * @param {Object[]} filtered - Відфільтровані фільми
+   */
   function handleFilterResult(filtered){
     setAllMovies(filtered);
     setCurrentPage(1);
   }
 
+  /** Плавно прокручує сторінку вгору */
   function scrollToUp(){
     window.scrollTo({top: 0, behavior: "smooth"});
   }
